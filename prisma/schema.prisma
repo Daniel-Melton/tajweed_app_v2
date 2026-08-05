@@ -1,0 +1,100 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // هيرجع يشتغل كلاسيكي ومستقر 100%
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  STUDENT
+}
+
+model User {
+  id             String   @id @default(uuid()) // استخدام UUID لـ PostgreSQL
+  name           String
+  email          String?  @unique
+  phoneNumber    String?  @unique 
+  password       String   
+  role           UserRole @default(STUDENT)
+  
+
+  totalStars     Int      @default(0)
+  masteredSkills String[] @default([]) 
+
+  testResults    TestResult[] 
+  certificates   Certificate[]
+  createdSkills  Skill[]      
+  progress       UserProgress[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  concept     String   @db.Text
+  videoUrl    String?  // رابط الفيديو
+  quizId      String?  // ربط بالاختبار
+  createdAt   DateTime @default(now())
+  questions   Question[]
+  order       Int      @default(0)
+  userProgress UserProgress[]
+  // العلاقات
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdById String
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  skillId       String   
+  skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  text          String
+  questionText  String   
+  options       String[] 
+  correctAnswer String   
+  points        Int      @default(1) 
+}
+
+model TestResult {
+  id             String   @id @default(uuid())
+  userId         String   
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  skillSlug      String   
+  skillTitle     String   
+  score          Int      
+  totalQuestions Int  
+  isPassed       Boolean  
+  wrongAnswers   Json?  
+
+  createdAt      DateTime @default(now()) 
+}
+
+model Certificate {
+  id              String   @id @default(uuid())
+  userId          String   
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  certificateName String   
+  serialNumber    String   @unique 
+  designerName    String   @default("Ahmad Ismael") 
+  
+  issuedAt        DateTime @default(now()) 
+}
+
+model UserProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String
+  isCompleted Boolean  @default(false)
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id])
+  skill       Skill    @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId]) // عشان نضمن إن مفيش تكرار لنفس الدرس لنفس الطالبة
+}

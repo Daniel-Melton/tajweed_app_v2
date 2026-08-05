@@ -1,8 +1,22 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-gray-900 bg-gray-50; /* تأكد إن اللون gray-900 عشان يكون واضح جداً */
+  }
+  
+  /* تقوية الخطوط داخل الـ inputs */
+  input, textarea {
+    @apply text-gray-900 placeholder:text-gray-400;
+  }
+}
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #5e5c5c;
 }
 
 @theme inline {
@@ -23,4 +37,76 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+@layer components {
+  .leaf-card {
+    background-image: url('/images/leaf.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    width: 200px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));
+    transition: transform 0.3s ease, filter 0.3s ease;
+    cursor: default;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 640px) {
+    .leaf-card {
+      width: 240px;
+      height: 155px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .leaf-card {
+      width: 270px;
+      height: 170px;
+    }
+  }
+
+  .leaf-card:hover {
+    transform: scale(1.05) rotate(2deg);
+  }
+
+  .leaf-card.locked {
+    filter: grayscale(0.9) brightness(0.4);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .leaf-card.locked:hover {
+    transform: none;
+  }
+}
+
+@keyframes soft-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 6px 12px rgba(5, 200, 100, 0.25)) brightness(1.05);
+  }
+}
+
+.animate-soft-pulse {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tree-glow {
+  0%, 100% {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45), 0 0 25px rgba(150, 180, 120, 0.15);
+  }
+  50% {
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45), 0 0 40px rgba(150, 180, 120, 0.4);
+  }
+}
+
+.animate-tree-glow {
+  animation: tree-glow 2.5s ease-in-out infinite;
 }

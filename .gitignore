@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local notes & assets (not for the repo)
+app desciption.docx
+dashboard.png
+CLAUDE.md
+AGENTS.md
+public/images/preview-treev2.png
+components/DashboardStats.-oldtsx
