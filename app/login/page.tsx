@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link"; // السطر ده هو اللي بيعرف الـ Link
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const asAdmin = searchParams.get("as") === "admin";
   const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +27,11 @@ export default function LoginPage() {
       setError("بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.");
       setLoading(false);
     } else {
-      router.push("/welcome"); // التوجه لشاشة الترحيب بعد النجاح
+      // بنوجّه حسب صلاحية الحساب الفعلية (مش حسب الزرار اللي اتضغط)
+      const session = await getSession();
+      // @ts-ignore role مضافة يدويًا في next-auth callbacks
+      const isAdmin = session?.user?.role === "ADMIN";
+      router.push(isAdmin ? "/dashboard/admin/quran-examples" : "/welcome");
       router.refresh();
     }
   };
@@ -33,7 +39,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dir-rtl" dir="rtl">
       <div className="max-w-md w-full p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-emerald-700 mb-6">تسجيل الدخول</h2>
+        <h2 className="text-2xl font-bold text-center text-emerald-700 mb-6">
+          {asAdmin ? "تسجيل دخول الأدمن" : "تسجيل الدخول"}
+        </h2>
         
         {error && <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>}
 
@@ -71,5 +79,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

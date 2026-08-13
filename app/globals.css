@@ -3,6 +3,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* بيفعّل dark: كـ class بدل ما يعتمد على إعدادات نظام التشغيل بس،
+   عشان زرار التبديل (ليل/نهار) يقدر يتحكم فيه يدويًا */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body {
     @apply text-gray-900 bg-gray-50; /* تأكد إن اللون gray-900 عشان يكون واضح جداً */
@@ -40,33 +44,44 @@ body {
 }
 @layer components {
   .leaf-card {
-    background-image: url('/images/leaf.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    width: 200px;
-    height: 130px;
+    width: 130px;
+    height: 71px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     position: relative;
-    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));
     transition: transform 0.3s ease, filter 0.3s ease;
     cursor: default;
     flex-shrink: 0;
   }
 
+  /* طبقة رسمة الورقة نفسها — منفصلة عن النص عشان نقدر نعكسها (flip) لوحدها */
+  .leaf-card__art {
+    position: absolute;
+    inset: 0;
+    background-image: url('/images/leaf.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5));
+    z-index: 0;
+  }
+
+  .leaf-card__art--flip {
+    transform: scaleX(-1);
+  }
+
   @media (min-width: 640px) {
     .leaf-card {
-      width: 240px;
-      height: 155px;
+      width: 155px;
+      height: 85px;
     }
   }
 
   @media (min-width: 1024px) {
     .leaf-card {
-      width: 270px;
-      height: 170px;
+      width: 175px;
+      height: 95px;
     }
   }
 
@@ -75,9 +90,12 @@ body {
   }
 
   .leaf-card.locked {
-    filter: grayscale(0.9) brightness(0.4);
-    opacity: 0.7;
+    opacity: 0.92;
     pointer-events: none;
+  }
+
+  .leaf-card.locked .leaf-card__art {
+    filter: grayscale(0.9) brightness(0.35) drop-shadow(0 8px 10px rgba(0,0,0,0.5));
   }
 
   .leaf-card.locked:hover {

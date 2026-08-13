@@ -64,6 +64,97 @@ async function main() {
     console.log(`  ✅ ${skill.title}`);
   }
 
+  // أمثلة قرآنية توضيحية (تلوين المقاطع اللي فيها الحكم) — مبدئيًا لأول درسين كمثال شغّال
+  // ملحوظة: راجع دقة النص والتشكيل بنفسك قبل النشر الفعلي للطلاب.
+  const quranExamplesBySkillSlug: Record<
+    string,
+    { surahName: string; surahNumber: number; ayahNumber: number; verseText: string; highlights: string[]; order: number }[]
+  > = {
+    "izhar-halqi": [
+      {
+        surahName: "سورة قريش",
+        surahNumber: 106,
+        ayahNumber: 4,
+        verseText: "الَّذِي أَطْعَمَهُم مِّن جُوعٍ وَآمَنَهُم مِّنْ خَوْفٍ",
+        highlights: ["مِنْ خَوْفٍ"],
+        order: 1,
+      },
+    ],
+    "idgham-bighunnah": [
+      {
+        surahName: "سورة البقرة",
+        surahNumber: 2,
+        ayahNumber: 8,
+        verseText: "وَمِنَ النَّاسِ مَن يَقُولُ آمَنَّا بِاللَّهِ وَبِالْيَوْمِ الْآخِرِ وَمَا هُم بِمُؤْمِنِينَ",
+        highlights: ["مَن يَقُولُ"],
+        order: 1,
+      },
+    ],
+  };
+
+  for (const [skillSlug, examples] of Object.entries(quranExamplesBySkillSlug)) {
+    const skill = await prisma.skill.findUnique({ where: { slug: skillSlug } });
+    if (!skill) continue;
+    // نمسح القديم ونعيد الإدراج عشان الـ seed يفضل idempotent
+    await prisma.quranExample.deleteMany({ where: { skillId: skill.id } });
+    await prisma.quranExample.createMany({
+      data: examples.map((e) => ({ ...e, skillId: skill.id })),
+    });
+    console.log(`  📖 أمثلة قرآنية لدرس: ${skill.title}`);
+  }
+
+  // أسئلة تمارين توضيحية (مبدئيًا لأول درسين كمثال شغّال)
+  const questionsBySkillSlug: Record<
+    string,
+    { questionText: string; options: string[]; correctAnswer: string; points: number }[]
+  > = {
+    "izhar-halqi": [
+      {
+        questionText: "كم عدد حروف الإظهار الحلقي؟",
+        options: ["4 حروف", "6 حروف", "8 حروف", "15 حرف"],
+        correctAnswer: "6 حروف",
+        points: 1,
+      },
+      {
+        questionText: "أي الكلمات التالية فيها إظهار حلقي؟",
+        options: ["مِنْ خَوْفٍ", "مَن يَقُولُ", "مِن بَعْدِ", "مِن مَّالٍ"],
+        correctAnswer: "مِنْ خَوْفٍ",
+        points: 1,
+      },
+    ],
+    "idgham-bighunnah": [
+      {
+        questionText: "حروف الإدغام بغنة مجموعة في كلمة:",
+        options: ["ينمو", "قلو", "بجهد", "أحكم"],
+        correctAnswer: "ينمو",
+        points: 1,
+      },
+      {
+        questionText: "أي الكلمات التالية فيها إدغام بغنة؟",
+        options: ["مَن يَقُولُ", "مِنْ خَوْفٍ", "أَنْعَمْتَ", "الْحَمْدُ"],
+        correctAnswer: "مَن يَقُولُ",
+        points: 1,
+      },
+    ],
+  };
+
+  for (const [skillSlug, qs] of Object.entries(questionsBySkillSlug)) {
+    const skill = await prisma.skill.findUnique({ where: { slug: skillSlug } });
+    if (!skill) continue;
+    await prisma.question.deleteMany({ where: { skillId: skill.id } });
+    await prisma.question.createMany({
+      data: qs.map((q) => ({
+        skillId: skill.id,
+        text: q.questionText,
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        points: q.points,
+      })),
+    });
+    console.log(`  📝 أسئلة تمارين لدرس: ${skill.title}`);
+  }
+
   // إنشاء طالبة تجريبية مع تقدم في بعض الدروس
   let student = await prisma.user.findFirst({ where: { email: "student@test.com" } });
   if (!student) {

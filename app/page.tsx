@@ -8,10 +8,16 @@ export default function HomePage() {
       
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <Link 
-          href="/login" 
+          href="/login?as=student" 
           className="w-full py-3 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition"
         >
-          تسجيل الدخول
+          تسجيل الدخول كطالب
+        </Link>
+        <Link 
+          href="/login?as=admin" 
+          className="w-full py-3 bg-gray-800 text-white rounded-lg font-semibold hover:bg-gray-900 transition"
+        >
+          تسجيل الدخول كأدمن
         </Link>
         <Link 
           href="/register" 

@@ -41,11 +41,36 @@ model Skill {
   quizId      String?  // ربط بالاختبار
   createdAt   DateTime @default(now())
   questions   Question[]
+  quranExamples QuranExample[]
   order       Int      @default(0)
   userProgress UserProgress[]
   // العلاقات
   createdBy   User     @relation(fields: [createdById], references: [id])
   createdById String
+}
+
+model QuranExample {
+  id          String   @id @default(cuid())
+  skillId     String
+  skill       Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  surahName   String   // اسم السورة (مثال: "سورة البقرة") — للعرض بس
+  surahNumber Int      @default(0) // رقم السورة في المصحف (1-114) — ده اللي بيستخدم فعليًا لجلب الصوت
+  ayahNumber  Int      // رقم الآية داخل السورة
+  verseText   String   @db.Text // نص الآية كاملاً
+
+  // المقاطع/الكلمات المطلوب تلوينها داخل verseText (مطابقة نصية حرفية).
+  // مثال: ["مَنْ يَقُولُ"] هيلوّن الكلمتين دول لو ظهروا بالظبط بنفس التشكيل جوه verseText.
+  highlights  String[] @default([])
+
+  // مسار الملف الصوتي المحلي بعد التحميل والدمج في المشروع (public/audio/...).
+  // لو null بيتم تشغيل الصوت مباشرة من الـ API الخارجي كـ fallback.
+  audioHusaryPath   String?
+  audioMinshawiPath String?
+
+  order       Int      @default(0)
+
+  @@index([skillId])
 }
 
 model Question {
