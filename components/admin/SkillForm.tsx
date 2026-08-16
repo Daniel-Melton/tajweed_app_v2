@@ -18,7 +18,7 @@ const skillSchema = z.object({
   order: z.coerce.number().int().min(0).optional(),
 });
 
-type SkillFormValues = z.input<typeof skillSchema>;
+type SkillFormValues = z.infer<typeof skillSchema>;
 
 export default function SkillForm({
   mode,
@@ -52,21 +52,13 @@ export default function SkillForm({
   const onSubmit = (data: SkillFormValues) => {
     setServerError(null);
     setSuccess(false);
-
-    // بما إن order بييجي كـ input قبل الـ coerce، بنحوّله هنا صراحة عشان
-    // يتوافق مع النوع اللي متوقعه createSkill/updateSkill (number | undefined)
-    const parsedOrder =
-      data.order === undefined || data.order === null || (data.order as unknown) === ""
-        ? undefined
-        : Number(data.order);
-
     startTransition(async () => {
       try {
         if (mode === "create") {
-          const created = await createSkill({ ...data, order: parsedOrder });
+          const created = await createSkill(data);
           router.push(`/dashboard/admin/skills/${created.id}/edit`);
         } else if (skill) {
-          await updateSkill(skill.id, { ...data, order: parsedOrder ?? skill.order });
+          await updateSkill(skill.id, { ...data, order: data.order ?? skill.order });
           setSuccess(true);
           router.refresh();
         }
@@ -79,20 +71,20 @@ export default function SkillForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">عنوان الدرس</label>
+        <label className="text-sm font-medium text-gray-700">عنوان الدرس</label>
         <input
           {...register("title")}
-          className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition"
           placeholder="مثال: المد الطبيعي وأنواعه الفرعية"
         />
         {errors.title && <p className="text-xs text-red-600">{errors.title.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">الرابط المختصر (Slug)</label>
+        <label className="text-sm font-medium text-gray-700">الرابط المختصر (Slug)</label>
         <input
           {...register("slug")}
-          className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition"
           placeholder="natural-madd-subtypes"
           dir="ltr"
         />
@@ -100,39 +92,39 @@ export default function SkillForm({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">شرح الدرس</label>
+        <label className="text-sm font-medium text-gray-700">شرح الدرس</label>
         <textarea
           {...register("concept")}
           rows={4}
-          className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition"
           placeholder="اكتب شرح الحكم هنا..."
         />
         {errors.concept && <p className="text-xs text-red-600">{errors.concept.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">رابط الفيديو (اختياري)</label>
+        <label className="text-sm font-medium text-gray-700">رابط الفيديو (اختياري)</label>
         <input
           {...register("videoUrl")}
-          className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition"
           placeholder="https://..."
           dir="ltr"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="text-sm font-medium text-gray-700">
           الترتيب في الشجرة {mode === "create" && "(اختياري، هيتحدد تلقائي لو سبته فاضي)"}
         </label>
         <input
           type="number"
           {...register("order")}
-          className="w-full p-3 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none transition"
+          className="w-full p-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none transition"
         />
       </div>
 
-      {serverError && <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 rounded-xl text-sm">{serverError}</div>}
-      {success && <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 rounded-xl text-sm">تم الحفظ بنجاح</div>}
+      {serverError && <div className="p-3 bg-red-50 text-red-700 rounded-xl text-sm">{serverError}</div>}
+      {success && <div className="p-3 bg-emerald-50 text-emerald-700 rounded-xl text-sm">تم الحفظ بنجاح</div>}
 
       <button
         type="submit"

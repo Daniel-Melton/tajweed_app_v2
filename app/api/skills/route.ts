@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  
+
   // حماية: لا تسمح إلا للـ ADMIN بإضافة أحكام
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ message: "غير مصرح لك" }, { status: 403 });
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
 
   try {
     const { title, concept, videoUrl, slug } = await req.json();
-    
+
     const newSkill = await prisma.skill.create({
       data: {
         title,
@@ -21,7 +21,6 @@ export async function POST(req: Request) {
         videoUrl,
         slug,
         createdById: session.user.id,
-        audioGuides: {}, // سنملأها لاحقاً
       },
     });
 
