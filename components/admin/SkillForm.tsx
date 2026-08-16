@@ -18,7 +18,7 @@ const skillSchema = z.object({
   order: z.coerce.number().int().min(0).optional(),
 });
 
-type SkillFormValues = z.infer<typeof skillSchema>;
+type SkillFormValues = z.input<typeof skillSchema>;
 
 export default function SkillForm({
   mode,
@@ -52,13 +52,21 @@ export default function SkillForm({
   const onSubmit = (data: SkillFormValues) => {
     setServerError(null);
     setSuccess(false);
+
+    // بما إن order بييجي كـ input قبل الـ coerce، بنحوّله هنا صراحة عشان
+    // يتوافق مع النوع اللي متوقعه createSkill/updateSkill (number | undefined)
+    const parsedOrder =
+      data.order === undefined || data.order === null || (data.order as unknown) === ""
+        ? undefined
+        : Number(data.order);
+
     startTransition(async () => {
       try {
         if (mode === "create") {
-          const created = await createSkill(data);
+          const created = await createSkill({ ...data, order: parsedOrder });
           router.push(`/dashboard/admin/skills/${created.id}/edit`);
         } else if (skill) {
-          await updateSkill(skill.id, { ...data, order: data.order ?? skill.order });
+          await updateSkill(skill.id, { ...data, order: parsedOrder ?? skill.order });
           setSuccess(true);
           router.refresh();
         }
