@@ -317,3 +317,137 @@ export async function downloadQuranAudio(exampleId: string, reciter: ReciterKey)
 
   return publicPath;
 }
+
+
+/** الصق الكود ده في آخر ملف lib/actions.ts الحالي
+ * (requireAdmin و prisma و revalidatePath و getServerSession
+ *  و authOptions أصلاً معرّفين فوق في نفس الملف)
+ * ============================================
+ */
+ 
+/** كل الدروس لعرضها في لوحة الإدارة، مع عداد الأمثلة والأسئلة لكل درس */
+export async function getAllSkillsForAdmin() {
+  await requireAdmin();
+  return prisma.skill.findMany({
+    orderBy: { order: "asc" },
+    include: {
+      _count: { select: { questions: true, quranExamples: true, userProgress: true } },
+    },
+  });
+}
+ 
+/** درس واحد بكل تفاصيله (لصفحة التعديل) */
+export async function getSkillForAdmin(id: string) {
+  await requireAdmin();
+  const skill = await prisma.skill.findUnique({
+    where: { id },
+    include: {
+      quranExamples: { orderBy: { order: "asc" } },
+      questions: true,
+    },
+  });
+  if (!skill) throw new Error("الدرس غير موجود");
+  return skill;
+}
+ 
+export async function createSkill(data: {
+  title: string;
+  slug: string;
+  concept: string;
+  videoUrl?: string;
+  order?: number;
+}) {
+  const session = await getServerSession(authOptions);
+  // @ts-ignore role مضافة يدويًا في next-auth callbacks
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    throw new Error("غير مصرح لك بهذا الإجراء");
+  }
+ 
+  if (!data.title.trim() || !data.slug.trim() || !data.concept.trim()) {
+    throw new Error("الرجاء ملء العنوان والرابط والشرح");
+  }
+ 
+  const existing = await prisma.skill.findUnique({ where: { slug: data.slug.trim() } });
+  if (existing) throw new Error("الرابط (slug) ده مستخدم بالفعل، اختر رابط تاني");
+ 
+  let order = data.order;
+  if (!order) {
+    const maxOrder = await prisma.skill.aggregate({ _max: { order: true } });
+    order = (maxOrder._max.order ?? 0) + 1;
+  }
+ 
+  const skill = await prisma.skill.create({
+    data: {
+      title: data.title.trim(),
+      slug: data.slug.trim(),
+      concept: data.concept.trim(),
+      videoUrl: data.videoUrl?.trim() || null,
+      order,
+      // @ts-ignore
+      createdBy: { connect: { id: session.user.id } },
+    },
+  });
+ 
+  revalidatePath("/dashboard/admin/skills");
+  revalidatePath("/dashboard");
+  return skill;
+}
+ 
+export async function updateSkill(
+  id: string,
+  data: { title: string; slug: string; concept: string; videoUrl?: string; order?: number }
+) {
+  await requireAdmin();
+ 
+  if (!data.title.trim() || !data.slug.trim() || !data.concept.trim()) {
+    throw new Error("الرجاء ملء العنوان والرابط والشرح");
+  }
+ 
+  const existing = await prisma.skill.findUnique({ where: { slug: data.slug.trim() } });
+  if (existing && existing.id !== id) {
+    throw new Error("الرابط (slug) ده مستخدم بالفعل، اختر رابط تاني");
+  }
+ 
+  const current = await prisma.skill.findUnique({ where: { id } });
+  if (!current) throw new Error("الدرس غير موجود");
+ 
+  await prisma.skill.update({
+    where: { id },
+    data: {
+      title: data.title.trim(),
+      slug: data.slug.trim(),
+      concept: data.concept.trim(),
+      videoUrl: data.videoUrl?.trim() || null,
+      order: data.order ?? current.order,
+    },
+  });
+ 
+  revalidatePath("/dashboard/admin/skills");
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/skills");
+}
+ 
+/** بيحذف الدرس مع كل تقدم الطلاب المرتبط بيه (الأمثلة والأسئلة بتتحذف تلقائي عن طريق onDelete: Cascade) */
+export async function deleteSkill(id: string) {
+  await requireAdmin();
+ 
+  await prisma.$transaction([
+    prisma.userProgress.deleteMany({ where: { skillId: id } }),
+    prisma.skill.delete({ where: { id } }),
+  ]);
+ 
+  revalidatePath("/dashboard/admin/skills");
+  revalidatePath("/dashboard");
+}
+ 
+
+
+
+
+
+
+
+
+
+
+

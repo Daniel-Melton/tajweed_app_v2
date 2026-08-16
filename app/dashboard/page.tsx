@@ -4,47 +4,6 @@ import { authOptions } from "@/lib/auth";
 import { getUserProgress } from "@/lib/actions";
 import Link from "next/link";
 import { getLessonPositions, getTileCount, TREE_ASPECT } from "@/lib/lessonTreeLayout";
-import LogoutButton from "@/components/LogoutButton";
-import ThemeToggle from "@/components/ThemeToggle";
-
-const navItems = [
-  {
-    label: "الرئيسية",
-    href: "/dashboard",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10.5L12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5" />
-      </svg>
-    ),
-  },
-  {
-    label: "التحليلات",
-    href: "/dashboard/analytics",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18M8 17v-5m5 5V8m5 9v-8" />
-      </svg>
-    ),
-  },
-  {
-    label: "الدورات",
-    href: "/dashboard/skills",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.2c-1.8-1.5-4.4-1.8-7-1.6v13.4c2.6-.2 5.2.1 7 1.6 1.8-1.5 4.4-1.8 7-1.6V4.6c-2.6-.2-5.2.1-7 1.6zM12 6.2v13.4" />
-      </svg>
-    ),
-  },
-  {
-    label: "الإعدادات",
-    href: "/dashboard/settings",
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.9-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.9.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.9 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.9l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3 1.7 1.7 0 001-1.5V3a2 2 0 114 0v.2a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v.1a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.2a1.7 1.7 0 00-1.5 1z" />
-      </svg>
-    ),
-  },
-];
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -64,33 +23,8 @@ export default async function DashboardPage() {
   const tiles = getTileCount(total);
 
   return (
-    <div className="min-h-screen bg-emerald-50 text-emerald-950 dark:bg-gray-950 dark:text-white transition-colors" dir="rtl">
-      {/* الشريط الجانبي الأيسر */}
-      <aside className="fixed left-0 top-0 bottom-0 w-16 md:w-20 bg-white/95 dark:bg-gray-900/95 border-r border-emerald-100 dark:border-gray-800 z-50 flex flex-col items-center py-6 gap-8 transition-colors">
-        <Link href="/dashboard" className="text-2xl md:text-3xl select-none" title="رحلة إتقان التجويد">🌿</Link>
-        <nav className="flex flex-col gap-6 md:gap-8">
-          {navItems.map((item, i) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              title={item.label}
-              className={`text-emerald-700/60 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-1 ${
-                i === 0 ? "text-emerald-600 dark:text-emerald-400" : ""
-              }`}
-            >
-              {item.icon}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="mt-auto flex flex-col items-center gap-4">
-          <ThemeToggle />
-          {/* تسجيل الخروج أسفل الشريط الجانبي */}
-          <LogoutButton variant="icon" />
-        </div>
-      </aside>
-
-      {/* الهيدر الثابت */}
+    <div className="text-emerald-950 dark:text-white">
+      {/* الهيدر ثابت (position:fixed) فبيتجاهل padding أي حاوية أب — لازم يحط padding على نفسه دايمًا بغض النظر عن layout.tsx */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-emerald-100 dark:border-gray-800 pl-16 md:pl-20 transition-colors">
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between gap-4">
           <div className="min-w-0">
@@ -116,8 +50,8 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      {/* المحتوى */}
-      <main className="pt-24 md:pt-28 pl-16 md:pl-20 pb-12">
+      {/* المحتوى — الـ pl هنا اتشالت لأن layout.tsx الأب بقى بيحطها تلقائي (main مش fixed) */}
+      <main className="pt-24 md:pt-28 pb-12">
         <div className="relative max-w-4xl mx-auto px-4 md:px-8">
           {total === 0 ? (
             <div className="text-center py-24">
@@ -157,9 +91,7 @@ export default async function DashboardPage() {
                     } ${isCurrent ? "animate-soft-pulse" : ""}`}
                   >
                     {/* رسمة الورقة (تنعكس أفقيًا للأوراق على يسار الساق) */}
-                    <div
-                      className={`leaf-card__art ${pos.flip ? "leaf-card__art--flip" : ""}`}
-                    />
+                    <div className={`leaf-card__art ${pos.flip ? "leaf-card__art--flip" : ""}`} />
 
                     {/* شارة الرقم (أو علامة الصح لو الدرس مكتمل) */}
                     <div
@@ -198,12 +130,7 @@ export default async function DashboardPage() {
                 }
 
                 return (
-                  <Link
-                    key={skill.id}
-                    href={`/dashboard/skills/${skill.slug}`}
-                    className="absolute z-10 block"
-                    style={style}
-                  >
+                  <Link key={skill.id} href={`/dashboard/skills/${skill.slug}`} className="absolute z-10 block" style={style}>
                     {cardInner}
                   </Link>
                 );
