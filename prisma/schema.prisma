@@ -39,7 +39,6 @@ model Skill {
   concept     String   @db.Text
   videoUrl    String?  // رابط الفيديو
   quizId      String?  // ربط بالاختبار
-  audioGuides Json?   // روابط التسجيلات الصوتية الإرشادية (اختياري)
   createdAt   DateTime @default(now())
   questions   Question[]
   quranExamples QuranExample[]
