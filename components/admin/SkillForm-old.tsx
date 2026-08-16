@@ -37,23 +37,18 @@ export default function SkillForm({
     handleSubmit,
     formState: { errors },
   } = useForm<SkillFormValues>({
-    resolver: zodResolver(skillSchema) as any, // إضافة as any هنا بتنهي تعارض الأنواع فوراً
+    resolver: zodResolver(skillSchema),
     defaultValues: skill
       ? {
           title: skill.title,
           slug: skill.slug,
           concept: skill.concept,
-          videoUrl: skill.videoUrl || "",
-          order: skill.order ?? 0,
+          videoUrl: skill.videoUrl ?? "",
+          order: skill.order,
         }
-      : {
-          title: "",
-          slug: "",
-          concept: "",
-          videoUrl: "",
-          order: 0,
-        },
+      : undefined,
   });
+
   const onSubmit = (data: SkillFormValues) => {
     setServerError(null);
     setSuccess(false);
